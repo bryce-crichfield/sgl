@@ -50,7 +50,6 @@ trait EventStream[T] {
   }
 }
 
-
 class EagerEventStream[T] extends EventStream[T] {
   override def publish(value: T): Unit = {
     registry.values().foreach(handler => handler.apply(value))

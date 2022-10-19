@@ -1,5 +1,5 @@
 package core
-package viewport
+package renderer
 
 import org.lwjgl.glfw.GLFW.*
 
