@@ -63,7 +63,6 @@ class Renderer {
         viewport => 
           total_delta = total_delta + delta
           count_delta = count_delta + 1
-          
           println((total_delta/count_delta) / 1e10)
           glClear(GL_COLOR_BUFFER_BIT)
           Unsafe(viewport.update()) 

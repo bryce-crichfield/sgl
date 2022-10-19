@@ -13,7 +13,7 @@ import scala.collection.mutable.{ListBuffer}
 import core.kernel.Kernel
 
 class Viewport private (val pointer: Long) {
-  private val event_stream = new ListBuffer[kernel.Event]()
+  private val event_output = new ListBuffer[kernel.Event]()
   def close(): Boolean = {
     glfwWindowShouldClose(pointer)
   }
@@ -38,7 +38,6 @@ class Viewport private (val pointer: Long) {
   }
 
   def destroy(): Unit = {
-    println("DESTROYING WINDOW")
     glfwFreeCallbacks(pointer)
     glfwDestroyWindow(pointer)
     glfwMakeContextCurrent(MemoryUtil.NULL)
@@ -47,13 +46,25 @@ class Viewport private (val pointer: Long) {
   }
   // This seems like a pain 
 
+  val key_callback: GLFWKeyCallbackI = { 
+    (window, key, scancode, action, mods) =>
+    {
+      val code = KeyCode.from(key)
+      val act = InputAction.from(action)
+      val event = KeyEvent(code, act, mods)
+      event_output.addOne(event)
+    }
+  }
+  glfwSetKeyCallback(pointer, key_callback)
+
+
   // glfwSetWindowCloseCallback(pointer, _ => {
   //   event_stream.addOne(kernel.Event.SigTerm)
   // })
   
   def flushEvent(): List[kernel.Event] = {
-    val events = event_stream.toList
-    event_stream.clear()
+    val events = event_output.toList
+    event_output.clear()
     events
   }
 

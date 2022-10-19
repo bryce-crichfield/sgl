@@ -27,7 +27,7 @@ class Log(path: String) {
   }
 }
 
-class Kernel() {
+private class Kernel() {
   private val log = new Log("kernel.log")
   val subprocesses = new ListBuffer[Process]()
 
@@ -65,8 +65,8 @@ class Kernel() {
   private def intermediate_dispatch(event: Event): Unit = {
     event match
       case Event.SigTerm =>
-        println("Kernel heads sigterm")
         setFlag(Kernel.Flag.ShouldShutdown, true)
+      case _ => ()
       case null => ()
 
   }
@@ -104,7 +104,7 @@ class Kernel() {
   }
 
 }
-object Kernel {
+private object Kernel {
   private lazy val Flag_Values = Flag.values.toList
   private[kernel] enum Flag {
     case ShouldShutdown

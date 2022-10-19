@@ -3,9 +3,9 @@ package renderer
 
 import scala.collection.mutable.ListBuffer
 
-trait InputEvent
-case class KeyEvent(code: KeyCode, action: InputAction, modifier: Int) extends InputEvent
-case class MouseEvent(code: MouseCode, action: InputAction, mods: Int) extends InputEvent
+
+case class KeyEvent(code: KeyCode, action: InputAction, modifier: Int) extends core.kernel.InputEvent
+case class MouseEvent(code: MouseCode, action: InputAction, mods: Int) extends core.kernel.InputEvent
 
 // TODO: Reintegrate into the Viewport's input stream
 // Represents the current state of the viewport's various

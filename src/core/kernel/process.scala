@@ -24,7 +24,6 @@ trait Process extends Thread {
   val id: String
   // Acquire thread specific resources
   def launch(): Unit = ()
-  //
   def cycle(events: List[Event]): List[Event]
   // Release thread specific resource
   def shutdown(): Unit = ()

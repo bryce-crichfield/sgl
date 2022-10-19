@@ -3,7 +3,7 @@ package kernel
 
 // Default Communicator that the kernel
 // will use to synchronize with subprocesses
-class CycleSynchronizer {
+private class CycleSynchronizer {
   // Invoked by the kernel to signal the subprocess to work
   // Awaited by the subprocess before starting work
   private val start_signal = new Signal()

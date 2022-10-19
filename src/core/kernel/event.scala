@@ -9,13 +9,15 @@ import scala.jdk.CollectionConverters.*
 // Because the Kernel will have to know how dispatch
 // each event, this is currently sealed
 // This is tricky
-sealed trait Event
+trait Event
+trait InputEvent extends Event
+trait RenderEvent extends Event
 object Event {
   case object SigTerm extends Event
 }
 // A generic buffer designed to be used in a
 // publish/flush loop
-class Buffer[E] {
+private class Buffer[E] {
   private val buffer = new Channel[E]()
 
   def pump(event: E): Unit = {
