@@ -56,12 +56,18 @@ class Viewport private (val pointer: Long) {
     }
   }
   glfwSetKeyCallback(pointer, key_callback)
-
-
-  // glfwSetWindowCloseCallback(pointer, _ => {
-  //   event_stream.addOne(kernel.Event.SigTerm)
-  // })
   
+  val button_callback: GLFWMouseButtonCallbackI = {
+  (window, button, action, mods) =>
+    {
+      val code = MouseCode.from(button)
+      val act = InputAction.from(action)
+      val event = MouseEvent(code, act, mods)
+      event_output.addOne(event)
+    }
+  }
+  glfwSetMouseButtonCallback(pointer, button_callback)
+
   def flushEvent(): List[kernel.Event] = {
     val events = event_output.toList
     event_output.clear()

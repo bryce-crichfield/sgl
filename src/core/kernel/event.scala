@@ -10,26 +10,29 @@ import scala.jdk.CollectionConverters.*
 // each event, this is currently sealed
 // This is tricky
 trait Event
+trait SystemEvent extends Event
+object SystemEvent {
+  case object SigTerm extends SystemEvent
+}
 trait InputEvent extends Event
 trait RenderEvent extends Event
-object Event {
-  case object SigTerm extends Event
+
+trait EventPipe {
+  protected [kernel] def inlet(events: List[Event]): List[Event]
+  protected [kernel] def outlet(events: List[Event]): List[Event]
+  protected [kernel] def sink(events: List[Event]): Unit
+  protected [kernel] def source(): List[Event]
 }
-// A generic buffer designed to be used in a
-// publish/flush loop
-private class Buffer[E] {
-  private val buffer = new Channel[E]()
 
-  def pump(event: E): Unit = {
-    buffer.offer(event)
-  }
+private [kernel] class EventBuffer {
+  private val buffer = new Channel[Event]()
 
-  def pump(event: List[E]): Unit = {
+  def sink(event: List[Event]): Unit = {
     event.foreach(event => buffer.offer(event))
   }
 
-  def dump(): List[E] = {
-    val drain = new ArrayList[E]()
+  def source(): List[Event] = {
+    val drain = new ArrayList[Event]()
     buffer.drainTo(drain)
     drain.asScala.toList
   }

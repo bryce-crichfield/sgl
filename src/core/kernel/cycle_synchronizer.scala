@@ -17,11 +17,16 @@ private class CycleSynchronizer {
   def return_cycle(): Unit = {
     complete_signal.ping()
   }
-
   def await_call(): Unit = {
     start_signal.await()
   }
   def await_return(): Unit = {
     complete_signal.await()
+  }
+
+  def apply(f: => Unit): Unit = {
+    await_call()
+    f
+    return_cycle()
   }
 }
