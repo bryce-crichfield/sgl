@@ -29,21 +29,19 @@ class Chronometer() {
     if (!active) { return None }
     current = System.nanoTime()
     delta = current - last
-    if delta > interval then 
+    if delta > interval then
       last = current
       Some(delta)
     else None
   }
-  
+
   def time(): Long = {
     System.nanoTime()
   }
 
   def rate(fps: Double): Unit = {
-    if (fps <= 0) then
-      interval = 1
-    else 
-      interval = (1e9/fps).toLong
+    if (fps <= 0) then interval = 1
+    else interval = (1e9 / fps).toLong
   }
 }
 object Chronometer {
@@ -55,4 +53,3 @@ object Chronometer {
     chrono
   }
 }
-

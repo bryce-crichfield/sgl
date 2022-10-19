@@ -18,13 +18,13 @@ trait InputEvent extends Event
 trait RenderEvent extends Event
 
 trait EventPipe {
-  protected [kernel] def inlet(events: List[Event]): List[Event]
-  protected [kernel] def outlet(events: List[Event]): List[Event]
-  protected [kernel] def sink(events: List[Event]): Unit
-  protected [kernel] def source(): List[Event]
+  protected[kernel] def inlet(events: List[Event]): List[Event]
+  protected[kernel] def outlet(events: List[Event]): List[Event]
+  protected[kernel] def sink(events: List[Event]): Unit
+  protected[kernel] def source(): List[Event]
 }
 
-private [kernel] class EventBuffer {
+private[kernel] class EventBuffer {
   private val buffer = new Channel[Event]()
 
   def sink(event: List[Event]): Unit = {

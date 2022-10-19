@@ -28,23 +28,25 @@ private class Kernel() extends EventPipe {
     map
   }
 
-  override protected [kernel] def sink(events: List[Event]): Unit = {
+  override protected[kernel] def sink(events: List[Event]): Unit = {
     event_buffer.sink(events)
   }
-  
-  override protected [kernel] def source(): List[Event] = {
+
+  override protected[kernel] def source(): List[Event] = {
     event_buffer.source()
   }
 
-  override protected [kernel] def inlet(events: List[Event]): List[Event] = {
-    events.flatMap { event => event match
-      case SystemEvent.SigTerm =>
-        this.setFlag(Kernel.Flag.ShouldShutdown, true)
-        List(event)
-      case _ => List(event)
+  override protected[kernel] def inlet(events: List[Event]): List[Event] = {
+    events.flatMap { event =>
+      event match
+        case SystemEvent.SigTerm =>
+          this.setFlag(Kernel.Flag.ShouldShutdown, true)
+          List(event)
+        case _ => List(event)
     }
   }
-  override protected [kernel] def outlet(events: List[Event]): List[Event] = events
+  override protected[kernel] def outlet(events: List[Event]): List[Event] =
+    events
 
   def run(): Unit = {
     process_managers.foreach(_.start())
@@ -54,7 +56,7 @@ private class Kernel() extends EventPipe {
       process_managers.foreach(_.call())
       val returned: List[Event] = process_managers.flatMap(_.source()).toList
       this.sink(this.outlet(returned))
-      
+
     }
     process_managers.foreach(_.join())
   }
@@ -66,51 +68,3 @@ private object Kernel {
     case ShouldShutdown
   }
 }
-
-
-  // private def event_cycle(): Unit = {
-  //   // A. Kernel Event Buffer |=> Subprocess In Buffer
-  //   // B. Kernel Intermediate Dispatch |=> Subprocess In Buffer
-  //   // B. Subprocess Update |=> Subprocess Out Buffer
-  //   // C. Subprocess In Buffer |=> Kernel Event Buffer
-  //   val events_to_pump = event_buffer.source()
-  //   intermediate_dispatch(events_to_pump)
-  //   pump_process_input_buffers(events_to_pump)
-  //   cycle_process()
-  //   val events_to_dump = dump_process_output_buffers()
-  //   event_buffer.pump(events_to_dump)
-  // }
-
-  // private def intermediate_dispatch(events: List[Event]): Unit = {
-  //   events.foreach { event => event match
-  //     case SystemEvent.SigTerm =>
-  //       setFlag(Kernel.Flag.ShouldShutdown, true)
-  //     case _ => 
-  //       println(f"Kernel got $event")
-  //     case null => ()
-  //   }
-  // }
-
-  // private def pump_process_input_buffers(events: List[Event]): Unit = {
-  //   // pump the kernel's event buffer into
-  //   // subprocess parameter data
-  //   // subprocesses.foreach { process =>
-  //   //   process.incoming_event_buffer.pump(events)
-  //   // }
-  //   process_managers.foreach(_.sink(events))
-  // }
-
-  // private def cycle_process(): Unit = {
-  //   // call for the subprocesses to act
-  //   process_managers.foreach(_.call())
-  //   // await the return of the subprocesses
-  // }
-
-  // private def dump_process_output_buffers(): List[Event] = {
-  //   // dump the subprocess returned data into the
-  //   // kernel's event buffer
-  //   // subprocesses.flatMap { process =>
-  //   //   process.outgoing_event_buffer.dump()
-  //   // }.toList
-  //   process_managers.flatMap(_.source()).toList
-  // }
