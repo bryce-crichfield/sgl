@@ -1,5 +1,5 @@
 package core
-
+package kernel
 import java.time.{Instant, Duration}
 
 class Chronometer() {

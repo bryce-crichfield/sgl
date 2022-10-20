@@ -3,6 +3,9 @@ import core.kernel.*
 
 import scala.collection.mutable.HashMap
 
+// A manager is responsible for the lifetime and synchronization of a process
+// The manager, as an event pipe consumes all system events, forwarding 
+// any other events to the process dispatcher.
 class ProcessManager(dispatcher: ProcessDispatcher) extends Thread, EventPipe {
   private val cycle_synchronizer = new CycleSynchronizer()
   // I like to do this for fields, because it reduces the member variable overhead
@@ -21,7 +24,9 @@ class ProcessManager(dispatcher: ProcessDispatcher) extends Thread, EventPipe {
     cycle_synchronizer.await_return()
   }
 
-  override protected[kernel] def inlet(events: List[Event]): List[Event] = {
+  // The process manager will consume all system events
+  // Anything else is forwarded to the process dispatcher
+  override def inlet(events: List[Event]): List[Event] = {
     events flatMap { event =>
       event match
         case sys_event: SystemEvent =>
@@ -34,7 +39,7 @@ class ProcessManager(dispatcher: ProcessDispatcher) extends Thread, EventPipe {
     }
   }
 
-  override protected[kernel] def outlet(events: List[Event]): List[Event] = {
+  override def outlet(events: List[Event]): List[Event] = {
     events // return all event unaltered
   }
 

@@ -1,0 +1,190 @@
+package core
+
+import org.lwjgl.*;
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.*;
+import org.lwjgl.system.*;
+import java.io.File;
+import java.nio.*;
+import java.util.Scanner;
+import org.lwjgl.glfw.Callbacks.*;
+import org.lwjgl.glfw.GLFW.*;
+import org.lwjgl.opengl.GL11.*;
+import org.lwjgl.opengl.GL12.*;
+import org.lwjgl.opengl.GL13.*;
+import org.lwjgl.opengl.GL14.*;
+import org.lwjgl.opengl.GL15.*;
+import org.lwjgl.opengl.GL20.*;
+import org.lwjgl.opengl.GL21.*;
+import org.lwjgl.opengl.GL30.*;
+import org.lwjgl.opengl.GL31.*;
+import org.lwjgl.opengl.GL32.*;
+import org.lwjgl.opengl.GL33.*;
+import org.lwjgl.opengl.GL40.*;
+import org.lwjgl.opengl.GL41.*;
+import org.lwjgl.opengl.GL42.*;
+import org.lwjgl.opengl.GL43.*;
+import org.lwjgl.opengl.GL44.*;
+import org.lwjgl.opengl.GL45.*;
+import org.lwjgl.opengl.GL46.*;
+import org.lwjgl.system.MemoryStack.*;
+import org.lwjgl.system.MemoryUtil.*;
+import org.lwjgl.BufferUtils
+
+// Note: This idea still seems useful as a way of organizing
+// Sets the OpenGL context in specific ways
+// For example, the GUI render and World render
+// use different shaders, coordinate systems, and
+// configuration options.
+// trait Renderer {
+//     val shader_programs: ShaderDatabase
+//     val models: Set[Model]: ModelDatabase
+//     val draw_procedure: ShaderDatabase
+//     def begin(): Unit = {
+//      setupOpenGLContext
+//      respondToLoadCalls()
+//     }
+//     def render(): Unit = {
+//      respondToDrawCalls() 
+// }
+//     def end(): Unit
+// }
+
+
+
+import org.joml.Vector3f
+import org.joml.Vector2f
+import org.joml.Matrix4f
+import java.nio.FloatBuffer
+import cats.instances.float
+trait Bufferable[T] {
+    def buffer_size(): Int
+    def buffer(t: T): FloatBuffer
+}
+
+case class MeshVertex (
+    position: Vector3f,
+    normal: Vector3f,
+    texture_coordinates: Vector2f
+) {
+    def toBuffer(): FloatBuffer = {
+        val floatBuffer = BufferUtils.createFloatBuffer(MeshVertex.number_of_elements)
+        position.get(0, floatBuffer)
+        normal.get(3, floatBuffer)
+        texture_coordinates.get(6, floatBuffer)
+        floatBuffer 
+    }
+}
+object MeshVertex {
+    val number_of_elements = 8
+}
+
+    
+case class Texture (
+    id: Int,
+    group: String
+)
+import org.lwjgl.assimp.*
+import org.lwjgl.assimp.Assimp.*
+
+class Mesh (
+    val vertices: MutBuf[MeshVertex] = new MutBuf[MeshVertex]() ,
+    val indices : MutBuf[Int] = new MutBuf[Int]() ,
+    val textures: MutBuf[Texture] = new MutBuf[Texture]() 
+) {
+    private var vao: Int = _
+    private var vbo: Int = _
+    private var ebo: Int = _
+    // Construct --------------------------------------------------------------
+    vao = glGenVertexArrays()
+    vbo = glGenBuffers()
+    ebo = glGenBuffers()
+    glBindVertexArray(vao)
+    glBindBuffer(GL_ARRAY_BUFFER, vbo)
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo)
+    // Fill the VBO with Vertices
+    val floatBuffer = BufferUtils.createFloatBuffer(8 * vertices.length)
+    for (vector <- vertices) do
+        floatBuffer.put(vector.position.x)
+        floatBuffer.put(vector.position.y)
+        floatBuffer.put(vector.position.z)
+        floatBuffer.put(vector.normal.x)
+        floatBuffer.put(vector.normal.y)
+        floatBuffer.put(vector.normal.z)
+        floatBuffer.put(vector.texture_coordinates.x)
+        floatBuffer.put(vector.texture_coordinates.y)
+    floatBuffer.flip()
+    glBufferData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW)
+    // Fill the EBO with Indices
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo)
+    val intBuffer = BufferUtils.createIntBuffer(indices.size)
+    for (i <- indices) { intBuffer.put(i) }
+    intBuffer.flip()
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, intBuffer, GL_STATIC_DRAW)
+    // Configure the Attribute Pointers in the VAO 
+    // for the VBO
+    // NOTE: Stride and offset are specified in BYTES
+    glEnableVertexAttribArray(0) // Vertex.Position
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, 8*4, 0)
+    glEnableVertexAttribArray(1) // Vertex.Normal
+    glVertexAttribPointer(1, 3, GL_FLOAT, false, 8*4, 3*4)
+    glEnableVertexAttribArray(2) // Vertex.TextCoord
+    glVertexAttribPointer(2, 2, GL_FLOAT, false, 8*4, 6*4)
+    glBindVertexArray(0)
+    // ------------------------------------------------------------------------
+
+    def draw(shader: ShaderProgram, transform: Matrix4f, texture: Texture) = {
+        shader.use()
+
+        val array = Util.toArray(transform)
+        println(array.mkString)
+        glUniformMatrix4fv(0, false, array)
+        // TODO: Bind uniforms and textures
+        glBindVertexArray(vao)
+        glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0)
+        glBindVertexArray(0)
+    }
+}
+object Mesh {
+    def load(mesh: AIMesh): Mesh = {
+        val out_vertex = new MutBuf[MeshVertex]()
+        val out_indices = new MutBuf[Int]()
+
+        for (i <- 0 until mesh.mNumVertices()) {
+            val out_position = {
+                val vector = mesh.mVertices().get(i)
+                new Vector3f (vector.x(), vector.y(), vector.z())
+            }
+            val out = MeshVertex(out_position, new Vector3f(0.0f, 0.0f, 0.0f), new Vector2f(0.0f, 0.0f))
+            out_vertex.addOne(out)
+        }
+
+        for (i <- 0 until mesh.mNumFaces) {
+            val face = mesh.mFaces.get(i)
+            for (j <- 0 until face.mNumIndices) {
+                out_indices.addOne(face.mIndices().get(j))
+            }
+        }
+        // TODO: Add support for material/texture loading
+        Mesh(out_vertex, out_indices, new MutBuf[Texture]())
+    }
+}
+
+class Model private (private val meshes: MutBuf[Mesh]) {
+    
+    def draw(shader: ShaderProgram, transform: Matrix4f, texture: Texture): Unit = {
+        meshes.foreach(_.draw(shader, transform, texture))
+    } 
+}
+object Model {
+    def load(path: String): Model = {
+        val scene = aiImportFile(path, Assimp.aiProcess_Triangulate)
+        val meshes = new MutBuf[Mesh]()
+        val meshes_buffer = scene.mMeshes()
+        for (i <- 0 until meshes_buffer.limit()) {
+            val mesh = AIMesh.create(meshes_buffer.get(i))
+            meshes.addOne(Mesh.load(mesh))
+        }
+        Model(meshes)
+    }
+}

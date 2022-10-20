@@ -3,12 +3,6 @@ package core.kernel
 import java.util.ArrayList
 import scala.jdk.CollectionConverters.*
 
-// Represents a system call made by a subprocess
-// The kernel is responsible for routing events
-// to concerning subprocesses.
-// Because the Kernel will have to know how dispatch
-// each event, this is currently sealed
-// This is tricky
 trait Event
 trait SystemEvent extends Event
 object SystemEvent {
@@ -16,14 +10,29 @@ object SystemEvent {
 }
 trait InputEvent extends Event
 trait RenderEvent extends Event
+object RenderEvent {
+  case class DrawCall(model_id: String, transform: org.joml.Matrix4f) extends RenderEvent
 
-trait EventPipe {
-  protected[kernel] def inlet(events: List[Event]): List[Event]
-  protected[kernel] def outlet(events: List[Event]): List[Event]
-  protected[kernel] def sink(events: List[Event]): Unit
-  protected[kernel] def source(): List[Event]
+  case class ShaderRegistration(id: String, vpath: String, fpath: String) extends RenderEvent
 }
 
+
+/** An EventPipe represents a generic node in the global event stream.
+  *
+  * The pipe can take in (sink) and put out (source) events. Each pipe has an
+  * inlet and outlet function, that allows it to transform the event flow in a
+  * bidirectional manner.
+  *
+  * Usage : Events Sunk => Inlet => [Work] => Outlet => Events Sourced
+  */
+private [kernel] trait EventPipe {
+  def inlet(events: List[Event]): List[Event]
+  def outlet(events: List[Event]): List[Event]
+  def sink(events: List[Event]): Unit
+  def source(): List[Event]
+}
+
+/** An EventBuffer is akin to a terminal node in the global event stream. */
 private[kernel] class EventBuffer {
   private val buffer = new Channel[Event]()
 

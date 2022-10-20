@@ -28,15 +28,15 @@ private class Kernel() extends EventPipe {
     map
   }
 
-  override protected[kernel] def sink(events: List[Event]): Unit = {
+  override def sink(events: List[Event]): Unit = {
     event_buffer.sink(events)
   }
 
-  override protected[kernel] def source(): List[Event] = {
+  override def source(): List[Event] = {
     event_buffer.source()
   }
 
-  override protected[kernel] def inlet(events: List[Event]): List[Event] = {
+  override def inlet(events: List[Event]): List[Event] = {
     events.flatMap { event =>
       event match
         case SystemEvent.SigTerm =>
@@ -45,8 +45,7 @@ private class Kernel() extends EventPipe {
         case _ => List(event)
     }
   }
-  override protected[kernel] def outlet(events: List[Event]): List[Event] =
-    events
+  override def outlet(events: List[Event]): List[Event] = events
 
   def run(): Unit = {
     process_managers.foreach(_.start())

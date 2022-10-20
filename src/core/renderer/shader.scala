@@ -1,14 +1,24 @@
 package core
+import scala.io.Source
 import org.lwjgl.opengl.GL20.*;
-import cats.effect.Resource
 
-case class Shader private (
-    program: Int,
-    vertex_shader: Int,
-    fragment_shader: Int
-)
-import cats.effect.IO
-object Shader {
+case class ShaderProgram private (
+    private val program: Int,
+    private val vertex_shader: Int,
+    private val fragment_shader: Int) {
+
+      def dispose(): Unit = {
+        glDetachShader(program, vertex_shader)
+        glDetachShader(program, fragment_shader)
+        glDeleteProgram(program)
+      }
+
+      def use(): Unit = {
+        glUseProgram(program)
+      }
+}
+
+object ShaderProgram {
   private def compile(src: String, shader_type: Int, path: String): Unsafe[Int] = {
     for {
       id <- Unsafe { glCreateShader(shader_type) }
@@ -37,23 +47,17 @@ object Shader {
     } yield ()
   }
 
-  def load(vpath: String, fpath: String): Resource[Unsafe, Shader] = {
-    Resource.make {
-      for {
-        vsrc <- Util.read(vpath)
-        fsrc <- Util.read(fpath)
-        pid <- Unsafe { glCreateProgram() }
-        _ <- Util.throwOn(pid == 0)("glCreateProgram()")
-        vshader <- compile(vsrc, GL_VERTEX_SHADER, vpath)
-        fshader <- compile(fsrc, GL_FRAGMENT_SHADER, fpath)
-        _ <- link(pid, vshader, fshader)
-      } yield Shader(pid, vshader, fshader)
-    } { shader =>
-      Unsafe {
-        glDetachShader(shader.program, shader.vertex_shader)
-        glDetachShader(shader.program, shader.fragment_shader)
-        glDeleteProgram(shader.program)
-      }  
-    }
+  def load(vpath: String, fpath: String): Unsafe[ShaderProgram] = {
+    for {
+      vsrc <- Unsafe { 
+        Source.fromFile(vpath).getLines.map(_.appended('\n')).mkString }
+      fsrc <- Unsafe { 
+        Source.fromFile(fpath).getLines.map(_.appended('\n')).mkString }
+      pid <- Unsafe { glCreateProgram() }
+      _ <- Util.throwOn(pid == 0)("glCreateProgram()")
+      vshader <- compile(vsrc, GL_VERTEX_SHADER, vpath)
+      fshader <- compile(fsrc, GL_FRAGMENT_SHADER, fpath)
+      _ <- link(pid, vshader, fshader)
+    } yield ShaderProgram(pid, vshader, fshader) 
   }
 }
