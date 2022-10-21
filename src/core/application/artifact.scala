@@ -8,7 +8,7 @@ class Artifact(
   val shader_id: String
 ) {
   val transformation = new ArtifactTransformation()
-  transformation.scale = transformation.scale.mul(0.005f)
+  transformation.scale = transformation.scale.mul(0.05f)
   transformation.rotation_axis = new Vector3f(1.0f, 1.0f, 0.0f)
 
   // radians per second

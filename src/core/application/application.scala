@@ -6,14 +6,14 @@ import core.interface.*
 class Application() extends core.kernel.process.Process {
     val chrono = core.kernel.Chronometer(120.0)
     override val id: String = "Application"
-    val Artifact = new Artifact("gator", "id")
+    val gator = new Artifact("sphere", "id")
     override def cycle(events: List[Event]): List[Event] = {
         val response = events.flatMap { 
             case i: InputEvent =>  i match
                 case KeyEvent(KeyCode.ESCAPE, _, _) =>
                     List(SystemEvent.SigTerm)
                 case KeyEvent(KeyCode.A, InputAction.Repeat, _) =>
-                    Artifact.move_left() 
+                    gator.move_left() 
                     List()
                 case _ =>
                     println(f"Application got $i")
@@ -25,7 +25,8 @@ class Application() extends core.kernel.process.Process {
             case Some(delta) => 
                 val adj = delta / 1e6
                 println(adj)
-                Artifact.update(chrono.time()/1e9f, delta)::response
+                val time = chrono.time()/1e9f
+                gator.update(time, delta)::response
     }
 }
 

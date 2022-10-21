@@ -12,16 +12,12 @@ class Renderer() extends core.kernel.process.Process {
   val shader_library = new ShaderLibrary()
   val model_library = new ModelLibrary()
 
-//   val model_shader =
-//     new ShaderLoad("id", "shaders/v1.glsl", "shaders/f1.glsl")
-  var model: Model = _
-
   override def launch(): Unit = {
     viewport = Viewport.create().getOrElse(null)
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glClearColor(0.5f, 0.5, 0.5, 1.0f)
 
-    model_library.load(RenderEvent.LoadModel("gator", "rsc/model/gator.obj"))
+    model_library.load(RenderEvent.LoadModel("sphere", "resource/sphere.obj"))
     shader_library.load(RenderEvent.LoadShader("id", "shaders/v1.glsl", "shaders/f1.glsl"))
   }
 
@@ -34,19 +30,15 @@ class Renderer() extends core.kernel.process.Process {
     glClear(GL_COLOR_BUFFER_BIT)
 
     events.foreach {
-      case RenderEvent.DrawModel(model_id, shader_id, transform) =>
+      case event @ RenderEvent.DrawModel(model_id, shader_id, transform) =>
         for {
           model <- model_library.get(model_id)
           shader <- shader_library.get(shader_id)
         } yield model.draw(shader, transform, null)
-      // case registration: RenderEvent.ShaderRegistration =>
-      //     shader_library.register(registration) match
-      //         case None => println(f"Failed to Register $registration")
-      //         case Some(value) => println(f"Registered $value")
       case _ => ()
     }
-    // model.draw(shader_library.get(model_shader),  null)
     viewport.update()
+    
     if viewport.close()
     then List(SystemEvent.SigTerm)
     else viewport.flushEvent()
