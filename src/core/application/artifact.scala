@@ -7,19 +7,24 @@ class Artifact(
   val model_id: String,
   val shader_id: String
 ) {
-  val transformation = new ArtifactTransformation()
-  transformation.scale = transformation.scale.mul(0.05f)
-  transformation.rotation_axis = new Vector3f(1.0f, 1.0f, 0.0f)
+  val local_transform = new ArtifactTransformation()
+  val global_transform = new ArtifactTransformation()
+  
+  local_transform.scale = new Vector3f(0.05f)
 
   // radians per second
   var rate = Math.PI.toFloat / 2f
+  // var rate = 0
 
+// artf->animate(time, delta_time);
+
+// auto model_transform = artf->animation_transform.matrix() * artf->world_transform.matrix();
+// auto transform = vp_transform * model_transform;
   def update(time: Float, delta: Float): RenderEvent.DrawModel = {
-    transformation.rotation_angle = rate * time
-    RenderEvent.DrawModel(model_id, shader_id, transformation.apply())
+    // local_transform.rotation_angle = time * rate
+    val model_transform = local_transform.apply().mul(global_transform.apply())
+    RenderEvent.DrawModel(model_id, shader_id, model_transform)
   }
-
-  export transformation.move_left
 
 }
 

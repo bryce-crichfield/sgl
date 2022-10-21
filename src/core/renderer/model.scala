@@ -136,11 +136,9 @@ class Mesh(
   glBindVertexArray(0)
   // ------------------------------------------------------------------------
 
-  def draw(shader: ShaderProgram, transform: Matrix4f, texture: Texture) = {
+  def draw(shader: ShaderProgram, view_transform: Matrix4f, texture: Texture) = {
     shader.use()
-
-    val array = Util.toArray(transform)
-    println(array.mkString)
+    val array = Util.toArray(view_transform)
     glUniformMatrix4fv(0, false, array)
     // TODO: Bind uniforms and textures
     glBindVertexArray(vao)
@@ -158,9 +156,13 @@ object Mesh {
         val vector = mesh.mVertices().get(i)
         new Vector3f(vector.x(), vector.y(), vector.z())
       }
+      val out_normal = {
+        val normal = mesh.mNormals().get(i)
+        new Vector3f(normal.x(), normal.y(), normal.z())
+      }
       val out = MeshVertex(
         out_position,
-        new Vector3f(0.0f, 0.0f, 0.0f),
+        out_normal,
         new Vector2f(0.0f, 0.0f)
       )
       out_vertex.addOne(out)
