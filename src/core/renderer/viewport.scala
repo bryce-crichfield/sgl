@@ -10,7 +10,7 @@ import org.lwjgl.system.MemoryUtil.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.opengl.GL11.*;
 import scala.collection.mutable.{ListBuffer}
-import core.kernel.Kernel
+import core.interface.*
 
 class Viewport private (val pointer: Long) {
   private val event_output = new ListBuffer[kernel.Event]()

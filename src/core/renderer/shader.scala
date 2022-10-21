@@ -1,6 +1,8 @@
 package core
+package renderer
 import scala.io.Source
 import org.lwjgl.opengl.GL20.*;
+
 
 case class ShaderProgram private (
     private val program: Int,
@@ -60,4 +62,26 @@ object ShaderProgram {
       _ <- link(pid, vshader, fshader)
     } yield ShaderProgram(pid, vshader, fshader) 
   }
+}
+
+class ShaderLibrary {
+    private val dictionary = new MutMap[String, ShaderProgram]()
+
+    def load(load_event: RenderEvent.LoadShader): Option[ShaderProgram] = {
+        ShaderProgram.load(load_event.vpath, load_event.fpath)
+          .onFail(error => println(f"Renderer Failed Model Load: ${load_event.id}\n$error"))
+          .toOption.map { program =>
+            dictionary.put(load_event.id, program)
+            program
+          }
+    }  
+
+    def get(id: String): Option[ShaderProgram] = {
+      dictionary.get(id)
+    }
+
+    def close(): Unit = {
+        dictionary.values.foreach(_.dispose())
+        dictionary.clear()
+    }
 }

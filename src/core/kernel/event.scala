@@ -8,13 +8,6 @@ trait SystemEvent extends Event
 object SystemEvent {
   case object SigTerm extends SystemEvent
 }
-trait InputEvent extends Event
-trait RenderEvent extends Event
-object RenderEvent {
-  case class DrawCall(model_id: String, transform: org.joml.Matrix4f) extends RenderEvent
-
-  case class ShaderRegistration(id: String, vpath: String, fpath: String) extends RenderEvent
-}
 
 
 /** An EventPipe represents a generic node in the global event stream.

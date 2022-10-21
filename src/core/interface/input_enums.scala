@@ -1,5 +1,5 @@
 package core
-package renderer
+package interface
 
 import org.lwjgl.glfw.GLFW.*
 
