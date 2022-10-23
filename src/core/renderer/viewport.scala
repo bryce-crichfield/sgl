@@ -10,10 +10,10 @@ import org.lwjgl.system.MemoryUtil.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.opengl.GL11.*;
 import scala.collection.mutable.{ListBuffer}
-import core.interface.*
+import core.event.*
 
 class Viewport private (val pointer: Long) {
-  private val event_output = new ListBuffer[kernel.Event]()
+  private val event_output = new ListBuffer[Event]()
   def close(): Boolean = {
     glfwWindowShouldClose(pointer)
   }
@@ -68,7 +68,7 @@ class Viewport private (val pointer: Long) {
   }
   glfwSetMouseButtonCallback(pointer, button_callback)
 
-  def flushEvent(): List[kernel.Event] = {
+  def flushEvent(): List[Event] = {
     val events = event_output.toList
     event_output.clear()
     events

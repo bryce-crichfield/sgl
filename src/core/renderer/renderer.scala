@@ -1,7 +1,6 @@
 package core
 package renderer
-
-import core.kernel.{SystemEvent, Event}
+import core.event.*
 import org.joml.Vector3f
 import org.lwjgl.opengl.GL11.*
 
@@ -11,7 +10,7 @@ class Renderer() extends core.kernel.process.Process {
   var viewport: Viewport = _
   val shader_library = new ShaderLibrary()
   val model_library = new ModelLibrary()
-  val camera = new GlobalCamera()
+  // val camera = new GlobalCamera()
 
   override def launch(): Unit = {
     viewport = Viewport.create().getOrElse(null)
@@ -28,45 +27,26 @@ class Renderer() extends core.kernel.process.Process {
     shader_library.close()
     model_library.close()
   }
-  override def cycle(events: List[Event]): List[Event] = {
+  override def update(): Unit = {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    events.foreach {
-      case event @ RenderEvent.DrawModel(model_id, shader_id, transform) =>
-        for {
-          model <- model_library.get(model_id)
-          shader <- shader_library.get(shader_id)
-          mvp <- Some(camera.mvp_transform(transform))
-        } yield model.draw(shader, mvp, null)
-      case event @ RenderEvent.CameraTranslate(x, y, z) =>
-        // println("MOVE CAMERA")
-        val vector = new Vector3f(x, y, z).mul(0.025f)
-        camera.position.add(vector)
-      case _ => ()
-    }
+    // events.foreach {
+    //   case event @ RenderEvent.DrawModel(model_id, shader_id, transform) =>
+    //     for {
+    //       model <- model_library.get(model_id)
+    //       shader <- shader_library.get(shader_id)
+    //       mvp <- Some(camera.mvp_transform(transform))
+    //     } yield model.draw(shader, mvp, null)
+    //   case event @ RenderEvent.CameraTranslate(x, y, z) =>
+    //     // println("MOVE CAMERA")
+    //     val vector = new Vector3f(x, y, z).mul(0.025f)
+    //     camera.position.add(vector)
+    //   case _ => ()
+    // }
     viewport.update()
     
     if viewport.close()
-    then List(SystemEvent.SigTerm)
+    then out(SystemEvent.SigTerm)
     else viewport.flushEvent()
   }
 }
-
-// Note: This idea still seems useful as a way of organizing
-// Sets the OpenGL context in specific ways
-// For example, the GUI render and World render
-// use different shaders, coordinate systems, and
-// configuration options.
-// trait Renderer {
-//     val shader_programs: ShaderDatabase
-//     val models: Set[Model]: ModelDatabase
-//     val draw_procedure: ShaderDatabase
-//     def begin(): Unit = {
-//      setupOpenGLContext
-//      respondToLoadCalls()
-//     }
-//     def render(): Unit = {
-//      respondToDrawCalls()
-// }
-//     def end(): Unit
-// }

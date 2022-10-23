@@ -3,8 +3,6 @@ package core
 import cats.effect.IOApp
 
 package object kernel {
-  type Channel[A] = java.util.concurrent.LinkedBlockingQueue[A]
-
   trait KernelApp extends App {
     private val kernel = new Kernel()
     def attach(dispatcher: process.ProcessDispatcher): Unit = {

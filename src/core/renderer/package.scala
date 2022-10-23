@@ -1,6 +1,6 @@
 package core
 
 package object renderer {
-  type RenderEvent = core.interface.RenderEvent
-  val RenderEvent = core.interface.RenderEvent
+  type RenderEvent = core.event.RenderEvent
+  val RenderEvent = core.event.RenderEvent
 }

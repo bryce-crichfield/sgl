@@ -1,7 +1,7 @@
 package core
 package renderer
 
-import core.interface.*
+import core.event.*
 
 class Keyboard {
   private val event_buffer = MutBuf.empty[KeyEvent]

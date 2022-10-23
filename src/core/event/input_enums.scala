@@ -1,5 +1,5 @@
 package core
-package interface
+package event
 
 import org.lwjgl.glfw.GLFW.*
 

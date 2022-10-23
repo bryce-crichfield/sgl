@@ -1,7 +1,6 @@
 package core
 package kernel
 
-import java.util.concurrent.{LinkedBlockingQueue as Channel}
 import java.util.ArrayList
 import scala.jdk.CollectionConverters.*
 import scala.collection.mutable.{ListBuffer, HashMap}
@@ -9,12 +8,13 @@ import java.io.PrintWriter
 import java.io.FileWriter
 import java.io.BufferedWriter
 import core.kernel.process.*
-private class Kernel() extends EventPipe {
+import core.event.*
+private class Kernel() extends Channel[Event] {
   val process_managers = new ListBuffer[ProcessManager]()
   // Kernel process do not directly write to the Kernel
   // rather, each maintains an outgoing buffer, which the
   // kernel will retrieve on update
-  private val event_buffer = new EventBuffer()
+  private val event_buffer = new AsyncBuffer[Event]()
   // Kernel Level Log, which is a collation of
   // subprocess logs and the kernel log itself
   // private val log_buffer = new Buffer[String]()

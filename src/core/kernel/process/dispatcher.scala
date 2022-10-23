@@ -1,10 +1,11 @@
 package core.kernel.process
 
+import core.event.*
 import core.kernel.*
 
-abstract class ProcessDispatcher(val process: Process) extends EventPipe {
-  private val in_buffer = new EventBuffer()
-  private val out_buffer = new EventBuffer()
+abstract class ProcessDispatcher(val process: Process) extends Channel[Event] {
+  private val in_buffer = new AsyncBuffer[Event]()
+  private val out_buffer = new AsyncBuffer[Event]()
 
   private[process] def launch(): Unit = {
     process.launch()

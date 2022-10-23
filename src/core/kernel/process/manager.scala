@@ -1,12 +1,13 @@
 package core.kernel.process
 import core.kernel.*
+import core.event.*
 
 import scala.collection.mutable.HashMap
 
 // A manager is responsible for the lifetime and synchronization of a process
 // The manager, as an event pipe consumes all system events, forwarding 
 // any other events to the process dispatcher.
-class ProcessManager(dispatcher: ProcessDispatcher) extends Thread, EventPipe {
+class ProcessManager(dispatcher: ProcessDispatcher) extends Thread, Channel[Event] {
   private val cycle_synchronizer = new CycleSynchronizer()
   // I like to do this for fields, because it reduces the member variable overhead
   val flags = {
