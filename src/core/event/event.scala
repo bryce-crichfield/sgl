@@ -16,11 +16,16 @@ trait RenderEvent extends Event
 object RenderEvent {
   case class LoadShader(id: String, vpath: String, fpath: String) extends RenderEvent
   case class LoadModel(id: String, path: String) extends RenderEvent
-  case class DrawModel(model_id: String, shader_id: String, model_transform: org.joml.Matrix4f) extends RenderEvent
-  case class CameraX (scale: Float) extends RenderEvent
-  case class CameraY (scale: Float) extends RenderEvent
-  case class CameraZ (scale: Float) extends RenderEvent
-  case class CameraRotate (angle: Float) extends RenderEvent
+  case class DrawModel(model_id: String, shader_id: String, model_transform: org.joml.Matrix4f, absolute: Boolean) extends RenderEvent
+
+  case class CameraTranslateX (scale: Float) extends RenderEvent
+  case class CameraTranslateY (scale: Float) extends RenderEvent
+  case class CameraTranslateZ (scale: Float) extends RenderEvent
+  case class CameraPan (angle: Float) extends RenderEvent
+  case class CameraTilt (angle: Float) extends RenderEvent
+  case class CameraRoll (angle: Float) extends RenderEvent
+  case class CameraReset() extends RenderEvent
+
 
 }
 

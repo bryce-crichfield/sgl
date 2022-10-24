@@ -12,6 +12,9 @@ class Renderer() extends core.kernel.process.Process {
   val model_library = new ModelLibrary()
   val camera = new GlobalCamera()
 
+
+  var texture: Texture = _
+
   in {
     case RenderEvent.LoadModel(id, path) =>
       model_library.load(id, path)
@@ -23,44 +26,64 @@ class Renderer() extends core.kernel.process.Process {
   }
 
   in {
-    case RenderEvent.DrawModel(model_id, shader_id, transform) =>
+    case RenderEvent.DrawModel(model_id, shader_id, transform, absolute) =>
       for {
         model <- model_library.get(model_id)
         shader <- shader_library.get(shader_id)
-        mvp <- Some(camera.mvp_transform(transform))
+        mvp <- if !absolute 
+              then Some(camera.mvp_transform(transform))
+              else Some(transform)
       } yield model.draw(shader, mvp, null)
   }
 
   in {
-
-    case RenderEvent.CameraX(scale) =>
+    case RenderEvent.CameraTranslateX(scale) =>
       val direction_scalar_x = new Vector3f()
       camera.right.mul(scale, direction_scalar_x)
       camera.position.add(direction_scalar_x)
 
-    case RenderEvent.CameraY(scale) =>
+    case RenderEvent.CameraTranslateY(scale) =>
       val direction_scalar_y = new Vector3f()
       camera.up.mul(scale, direction_scalar_y)
       camera.position.add(direction_scalar_y)
 
-    case RenderEvent.CameraZ(scale) =>
+    case RenderEvent.CameraTranslateZ(scale) =>
       val direction_scalar_z = new Vector3f()
       camera.forward.mul(scale, direction_scalar_z)
       camera.position.add(direction_scalar_z)
 
 
-    case RenderEvent.CameraRotate(angle) =>
+    case RenderEvent.CameraPan(angle) =>
       val rotation = new Matrix3f().rotate(angle*.1f, new Vector3f(0, 1.0, 0))
       camera.right.mul(rotation)
       camera.up.mul(rotation)
       camera.forward.mul(rotation)
+    case RenderEvent.CameraTilt(angle) =>
+      val rotation = new Matrix3f().rotate(angle*.1f, new Vector3f(1.0, 1.0, 0))
+      camera.right.mul(rotation)
+      camera.up.mul(rotation)
+      camera.forward.mul(rotation)
+    case RenderEvent.CameraRoll(angle) =>
+      val rotation = new Matrix3f().rotate(angle*.1f, new Vector3f(0, 0.0, 1.0))
+      camera.right.mul(rotation)
+      camera.up.mul(rotation)
+      camera.forward.mul(rotation)
+
+    case RenderEvent.CameraReset() => 
+      camera.forward = new Vector3f(0, 0, -1)
+      camera.up = new Vector3f(0,1, 0) 
+      camera.right = new Vector3f(1,0,0)
+      camera.position = new Vector3f(0, 0, 0)
   }
 
   override def launch(): Unit = {
     viewport = Viewport.create().getOrElse(null)
     glEnable(GL_DEPTH_TEST)
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glClearColor(0.5f, 0.5, 0.5, 1.0f)
+
+
+    texture = Texture.load("resource/texture/metal.png").get
 
   }
 
@@ -72,21 +95,7 @@ class Renderer() extends core.kernel.process.Process {
   override def update(): Unit = {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     drain_in()
-    // events.foreach {
-    //   case event @ RenderEvent.DrawModel(model_id, shader_id, transform) =>
-    //     for {
-    //       model <- model_library.get(model_id)
-    //       shader <- shader_library.get(shader_id)
-    //       mvp <- Some(camera.mvp_transform(transform))
-    //     } yield model.draw(shader, mvp, null)
-    //   case event @ RenderEvent.CameraTranslate(x, y, z) =>
-    //     // println("MOVE CAMERA")
-    //     val vector = new Vector3f(x, y, z).mul(0.025f)
-    //     camera.position.add(vector)
-    //   case _ => ()
-    // }
     viewport.update()
-    
     if viewport.close()
     then out(SystemEvent.SigTerm)
     else viewport.flushEvent().foreach(out)

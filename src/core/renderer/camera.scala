@@ -14,11 +14,9 @@ class GlobalCamera {
   val chrono = Chronometer(1.0f)
 
   def mvp_transform(model_transform: Matrix4f): Matrix4f = {
-    val tmp = new Vector3f()
-    position.add(forward, tmp)
-    var camera = new Matrix4f().lookAt(position, tmp, up)
-    // val model = model_transform.translate(position)
-    // camera = camera.translate(position)
+    val eye = new Vector3f()
+    position.add(forward, eye)
+    var camera = new Matrix4f().lookAt(position, eye, up)
     val projection = new Matrix4f().setPerspective(fovy, aspect, near, 
       100.0f)
     projection.mul((camera.mul(model_transform)))
