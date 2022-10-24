@@ -9,10 +9,10 @@ class Application() extends core.kernel.process.Process {
     override val id: String = "Application"
     val artifact = new Artifact("boat", "id")
 
-    artifact.local_transform.rotation_angle = 90.0f
-    artifact.local_transform.rotation_axis = new Vector3f(1.0, 0.0, 0.0)
+    // artifact.local_transform.rotation_angle = 90.0f
+    // artifact.local_transform.rotation_axis = new Vector3f(1.0, 0.0, 0.0)
     // artifact.local_transform.scale = new Vector3f(.15f)
-    artifact.local_transform.rotation_center = new Vector3f(.5, 0.0, 0.0)
+    // artifact.local_transform.rotation_center = new Vector3f(.5, 0.0, 0.0)
     
 
     out(RenderEvent.LoadModel("boat", "resource/obj/boat.obj"))
@@ -28,14 +28,18 @@ class Application() extends core.kernel.process.Process {
             //     artifact.local_transform.rotation_angle = angle + delta
             // }
     }
-    val move_speed = 0.01f
+    val move_speed = 0.1f
     in {
         case KeyEvent(code, _, _) => 
             code match    
-            case KeyCode.W => out(RenderEvent.CameraTranslate(0, 0, -move_speed))
-            case KeyCode.S => out(RenderEvent.CameraTranslate(0, 0, move_speed))
-            case KeyCode.A => out(RenderEvent.CameraTranslate(move_speed, 0, 0))
-            case KeyCode.D => out(RenderEvent.CameraTranslate(-move_speed, 0, 0))
+            case KeyCode.W => out(RenderEvent.CameraZ(move_speed))
+            case KeyCode.S => out(RenderEvent.CameraZ(-move_speed))
+            case KeyCode.A => out(RenderEvent.CameraX(-move_speed))
+            case KeyCode.D => out(RenderEvent.CameraX(move_speed))
+            case KeyCode.Q => out(RenderEvent.CameraY(-move_speed))
+            case KeyCode.E => out(RenderEvent.CameraY(move_speed))
+            case KeyCode.Z => out(RenderEvent.CameraRotate(-1))
+            case KeyCode.C => out(RenderEvent.CameraRotate(1))
             case _ => ()
     }
 

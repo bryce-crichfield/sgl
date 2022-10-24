@@ -1,7 +1,7 @@
 package core
 package renderer
 import core.event.*
-import org.joml.Vector3f
+import org.joml.{Vector3f, Matrix3f}
 import org.lwjgl.opengl.GL11.*
 
 class Renderer() extends core.kernel.process.Process {
@@ -32,9 +32,28 @@ class Renderer() extends core.kernel.process.Process {
   }
 
   in {
-    case RenderEvent.CameraTranslate(x, y, z) =>
-      // println(f"${camera.position.toString()}")
-      camera.position.add(new Vector3f(x, y, z))
+
+    case RenderEvent.CameraX(scale) =>
+      val direction_scalar_x = new Vector3f()
+      camera.right.mul(scale, direction_scalar_x)
+      camera.position.add(direction_scalar_x)
+
+    case RenderEvent.CameraY(scale) =>
+      val direction_scalar_y = new Vector3f()
+      camera.up.mul(scale, direction_scalar_y)
+      camera.position.add(direction_scalar_y)
+
+    case RenderEvent.CameraZ(scale) =>
+      val direction_scalar_z = new Vector3f()
+      camera.forward.mul(scale, direction_scalar_z)
+      camera.position.add(direction_scalar_z)
+
+
+    case RenderEvent.CameraRotate(angle) =>
+      val rotation = new Matrix3f().rotate(angle*.1f, new Vector3f(0, 1.0, 0))
+      camera.right.mul(rotation)
+      camera.up.mul(rotation)
+      camera.forward.mul(rotation)
   }
 
   override def launch(): Unit = {

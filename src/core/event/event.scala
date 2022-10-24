@@ -17,8 +17,10 @@ object RenderEvent {
   case class LoadShader(id: String, vpath: String, fpath: String) extends RenderEvent
   case class LoadModel(id: String, path: String) extends RenderEvent
   case class DrawModel(model_id: String, shader_id: String, model_transform: org.joml.Matrix4f) extends RenderEvent
-  case class CameraTranslate (x: Float, y: Float, z: Float) extends RenderEvent
-
+  case class CameraX (scale: Float) extends RenderEvent
+  case class CameraY (scale: Float) extends RenderEvent
+  case class CameraZ (scale: Float) extends RenderEvent
+  case class CameraRotate (angle: Float) extends RenderEvent
 
 }
 
