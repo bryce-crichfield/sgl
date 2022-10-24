@@ -54,7 +54,8 @@ private class Kernel() extends Channel[Event] {
       process_managers.foreach(_.sink(incoming))
       process_managers.foreach(_.call())
       val returned: List[Event] = process_managers.flatMap(_.source()).toList
-      this.sink(this.outlet(returned))
+      // Kernel injects update??? Should process manager do this?
+      this.sink(event.Update()::this.outlet(returned))
 
     }
     process_managers.foreach(_.join())

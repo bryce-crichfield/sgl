@@ -13,7 +13,9 @@ abstract class ProcessDispatcher(val process: Process) extends Channel[Event] {
 
   private[process] def cycle(): Unit = {
     val incoming = in_buffer.source()
-    val outgoing = process.cycle(incoming)
+    incoming.foreach(event => process.input_buffer.addOne(event))
+    process.update()
+    val outgoing = process.drain_out()
     out_buffer.sink(outgoing)
   }
 

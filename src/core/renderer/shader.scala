@@ -67,11 +67,11 @@ object ShaderProgram {
 class ShaderLibrary {
     private val dictionary = new MutMap[String, ShaderProgram]()
 
-    def load(load_event: RenderEvent.LoadShader): Option[ShaderProgram] = {
-        ShaderProgram.load(load_event.vpath, load_event.fpath)
-          .onFail(error => println(f"Renderer Failed Model Load: ${load_event.id}\n$error"))
+    def load(id: String, vpath: String, fpath: String): Option[ShaderProgram] = {
+        ShaderProgram.load(vpath, fpath)
+          .onFail(error => println(f"Renderer Failed Model Load: ${id}\n$error"))
           .toOption.map { program =>
-            dictionary.put(load_event.id, program)
+            dictionary.put(id, program)
             program
           }
     }  

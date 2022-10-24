@@ -88,7 +88,7 @@ object Viewport {
       pointer <- Unsafe { 
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE)
-        glfwCreateWindow(800, 800, "", 0, 0)
+        glfwCreateWindow(1200, 1200, "", 0, 0)
       }
       _ <- Util.throwOn(pointer == 0)("glfwCreateWindow()")
       _ <- Unsafe {

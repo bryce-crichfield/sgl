@@ -4,6 +4,7 @@ package event
 
 
 trait Event
+case class Update() extends Event
 
 trait SystemEvent extends Event
 object SystemEvent {
@@ -17,6 +18,8 @@ object RenderEvent {
   case class LoadModel(id: String, path: String) extends RenderEvent
   case class DrawModel(model_id: String, shader_id: String, model_transform: org.joml.Matrix4f) extends RenderEvent
   case class CameraTranslate (x: Float, y: Float, z: Float) extends RenderEvent
+
+
 }
 
 trait InputEvent extends Event

@@ -25,14 +25,14 @@ class Chronometer() {
     active = false
   }
 
-  def tick(): Option[Long] = {
-    if (!active) { return None }
+  def tick(): Boolean = {
+    if (!active) { return false }
     current = System.nanoTime()
     delta = current - last
     if delta > interval then
       last = current
-      Some(delta)
-    else None
+      true
+    else false
   }
 
   def time(): Long = {
@@ -42,6 +42,10 @@ class Chronometer() {
   def rate(fps: Double): Unit = {
     if (fps <= 0) then interval = 1
     else interval = (1e9 / fps).toLong
+  }
+
+  def difference(): Double = {
+    this.delta
   }
 }
 object Chronometer {

@@ -63,11 +63,6 @@ object MeshVertex {
   val texture_coordinates_byte_offset = 6 * 4
 }
 
-case class Texture(
-    id: Int,
-    group: String
-)
-
 class Mesh(
     val vertices: MutBuf[MeshVertex] = new MutBuf[MeshVertex](),
     val indices: MutBuf[Int] = new MutBuf[Int](),
@@ -207,15 +202,15 @@ object Model {
 
 class ModelLibrary {
   private val dictionary = new MutMap[String, Model]()
-  def load(load_event: RenderEvent.LoadModel): Option[Model] = {
+  def load(id: String, path: String): Option[Model] = {
     Model
-      .load(load_event.path)
+      .load(path)
       .onFail(error =>
-        println(f"Renderer Failed Model Load: ${load_event.id}\n$error")
+        println(f"Renderer Failed Model Load: ${id}\n$error")
       )
       .toOption
       .map { model =>
-        dictionary.put(load_event.id, model)
+        dictionary.put(id, model)
         model
       }
   }

@@ -9,9 +9,6 @@ class Artifact(
 ) {
   val local_transform = new ArtifactTransformation()
   val global_transform = new ArtifactTransformation()
-  
-  local_transform.scale = new Vector3f(0.05f)
-
   // radians per second
   var rate = Math.PI.toFloat / 2f
   // var rate = 0
@@ -23,8 +20,10 @@ class Artifact(
   def update(time: Float, delta: Float): RenderEvent.DrawModel = {
     // local_transform.rotation_angle = time * rate
     val model_transform = local_transform.apply().mul(global_transform.apply())
+    // val model_transform = new Matrix4f().identity()
     RenderEvent.DrawModel(model_id, shader_id, model_transform)
   }
+
 
 }
 
@@ -42,9 +41,5 @@ class ArtifactTransformation {
       .rotate(rotation_angle, rotation_axis)
       .translate(rotation_center.mul(-1).mul(scale))
       .scale(scale)
-  }
-
-  def move_left(): Unit = {
-    translate = translate.sub(0.01, 0, 0)
   }
 }

@@ -7,7 +7,8 @@ import core.event.*
 
 trait Process {
   val id: String
-  private val output_buffer = new MutBuf[Event]()
+  private [kernel] val output_buffer = new MutBuf[Event]()
+  private [kernel] val input_buffer= new MutBuf[Event]()
   private val input_stream = new Stream[Event]()
 
 
@@ -19,18 +20,22 @@ trait Process {
     input_stream.sink(handler)
   }
 
+  def drain_in(): Unit = {
+    input_buffer.foreach(event => input_stream.source(event))
+    input_buffer.clear()
+  }
+
+  private [kernel]def drain_out(): List[Event] = {
+    val output = output_buffer.toList
+    output_buffer.clear()
+    output
+  } 
+
   def launch(): Unit =
     println(f"$id Launch")
 
-  final private [kernel] def cycle(events: List[Event]): List[Event] = {
-    events.foreach(event => input_stream.source(event))
-    update()
-    val publication = output_buffer.toList
-    output_buffer.clear()
-    publication
-  }
+  def update(): Unit 
 
-  def update(): Unit
   def shutdown(): Unit =
     println(f"$id Shutdown")
 }
