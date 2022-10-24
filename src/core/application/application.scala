@@ -7,9 +7,15 @@ import org.joml.Vector3f
 class Application() extends core.kernel.process.Process {
     val chrono = core.kernel.Chronometer(30.0)
     override val id: String = "Application"
-    val scene = new Scene()
-    
-    out(RenderEvent.LoadModel("boat", "resource/obj/square.obj"))
+    val root_node = new SceneNode()
+    root_node.local_transform.translate = new Vector3f(0, 0, -2)
+    root_node.local_transform.rotation_axis = new Vector3f(1.0, 0, 0)
+    root_node.local_transform.rotation_angle = Math.PI.toFloat / 2
+
+    val child = new SceneNode()
+    child.local_transform.scale = new Vector3f(0.5, 0.5, 0.5)
+    root_node.children.addOne(child)
+    out(RenderEvent.LoadModel("square", "resource/obj/square.obj"))
     out(RenderEvent.LoadShader("id", "resource/shaders/v1.glsl", "resource/shaders/f1.glsl"))
 
     val move_speed = 0.1f
@@ -31,10 +37,9 @@ class Application() extends core.kernel.process.Process {
             case KeyCode.F1 => out(RenderEvent.CameraReset())
             case _ => ()
     }
-
     override def update(): Unit = {
         drain_in()
-       scene.update().foreach(out)
+        root_node.render().foreach(out)
     }
 }
 

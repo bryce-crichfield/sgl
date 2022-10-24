@@ -17,14 +17,15 @@ class Renderer() extends core.kernel.process.Process {
 
   in {
     case RenderEvent.LoadModel(id, path) =>
+      println(f"LoadModel $id at $path")
       model_library.load(id, path)
   }
 
   in {
     case RenderEvent.LoadShader(id, vpath, fpath) =>
+      println(f"LoadModel $id at $vpath and $fpath")
       shader_library.load(id, vpath, fpath)
   }
-
   in {
     case RenderEvent.DrawModel(model_id, shader_id, transform, absolute) =>
       for {
@@ -79,7 +80,7 @@ class Renderer() extends core.kernel.process.Process {
   override def launch(): Unit = {
     viewport = Viewport.create().getOrElse(null)
     glEnable(GL_DEPTH_TEST)
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glClearColor(0.5f, 0.5, 0.5, 1.0f)
 
 

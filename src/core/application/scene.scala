@@ -2,16 +2,23 @@ package core.application
 
 import core.event.RenderEvent
 import org.joml.Vector3f
+import org.joml.Matrix4f
 
-class Scene {
-  val artifacts = new core.MutBuf[Artifact]()
-  val addition = new Artifact("boat", "id")
-  addition.local_transform.rotation_axis = new Vector3f(1.0, 0.0, 0.0)
-  addition.local_transform.rotation_angle = Math.PI.toFloat / 2.0f
-  addition.local_transform.translate.add(new Vector3f(0.0, 0.0, -1))
-  addition.local_transform.scale = new Vector3f(1)
-  artifacts.addOne(addition)
+class SceneNode {
+  val model_id = "square"
+  val shader_id = "id"
+  val local_transform = new ArtifactTransformation()
+  val children = new core.MutBuf[SceneNode]()
 
-  def update(): List[RenderEvent] =
-    artifacts.map(_.update(0, 0)).toList
+
+  def render(hierarchical_transform: Matrix4f = new Matrix4f()): List[RenderEvent] = {
+    val model_transform = new Matrix4f()
+    hierarchical_transform.mul(local_transform(), model_transform)
+
+    val this_render = RenderEvent.DrawModel(model_id, shader_id, model_transform, false)
+    val children_events = children.flatMap { child => child.render(model_transform) }.toList
+    this_render::children_events
+  }
 }
+
+
