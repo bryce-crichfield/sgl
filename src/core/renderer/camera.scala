@@ -3,6 +3,14 @@ package core.renderer
 import org.joml.{Vector3f, Matrix4f}
 import core.kernel.Chronometer
 
+
+trait Camera {
+  def move_right(): Unit
+  def move_left(): Unit
+  def move_up(): Unit
+  def move_down(): Unit
+}
+
 class GlobalCamera {
   var near: Float = 0.1f
   var fovy: Float = Math.PI.toFloat / 2

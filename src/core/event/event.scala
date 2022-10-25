@@ -13,6 +13,8 @@ object SystemEvent {
 
 
 trait RenderEvent extends Event
+
+
 object RenderEvent {
   case class LoadShader(id: String, vpath: String, fpath: String) extends RenderEvent
   case class LoadModel(id: String, path: String) extends RenderEvent

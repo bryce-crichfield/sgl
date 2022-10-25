@@ -36,6 +36,8 @@ class Application() extends core.kernel.process.Process {
             case KeyCode.I => out(RenderEvent.CameraRoll(.1f))
             case KeyCode.F1 => out(RenderEvent.CameraReset())
             case _ => ()
+        case MouseEvent(_, InputAction.Press, _) =>
+            println("Mouse Click")
     }
     override def update(): Unit = {
         drain_in()

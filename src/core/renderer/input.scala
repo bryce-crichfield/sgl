@@ -24,9 +24,9 @@ class Mouse {
     event_buffer.append(event)
   }
 
-  def poll(): ((Double, Double), List[MouseEvent]) = {
+  def poll(): List[MouseEvent] = {
     val out = event_buffer.toList
     event_buffer.clear()
-    (x, y) -> out
+    out
   }
 }

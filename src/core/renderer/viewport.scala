@@ -14,6 +14,8 @@ import core.event.*
 
 class Viewport private (val pointer: Long) {
   private val event_output = new ListBuffer[Event]()
+  val keyboard = new Keyboard()
+  val mouse = new Mouse()
   def close(): Boolean = {
     glfwWindowShouldClose(pointer)
   }
@@ -21,6 +23,7 @@ class Viewport private (val pointer: Long) {
   def update(): Unit = {
     glfwSwapBuffers(pointer)
     glfwPollEvents()
+    
   }
 
   def center(): Unsafe[Unit] = {
@@ -52,7 +55,7 @@ class Viewport private (val pointer: Long) {
       val code = KeyCode.from(key)
       val act = InputAction.from(action)
       val event = KeyEvent(code, act, mods)
-      event_output.addOne(event)
+      keyboard.push(event)
     }
   }
   glfwSetKeyCallback(pointer, key_callback)
@@ -63,14 +66,17 @@ class Viewport private (val pointer: Long) {
       val code = MouseCode.from(button)
       val act = InputAction.from(action)
       val event = MouseEvent(code, act, mods)
-      event_output.addOne(event)
+      mouse.push(event)
     }
   }
   glfwSetMouseButtonCallback(pointer, button_callback)
 
   def flushEvent(): List[Event] = {
+    event_output.addAll(keyboard.poll())
+    event_output.addAll(mouse.poll())
     val events = event_output.toList
     event_output.clear()
+    println(f"Flushed ${events}")
     events
   }
 
