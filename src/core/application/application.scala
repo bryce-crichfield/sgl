@@ -7,7 +7,8 @@ import org.joml.Vector3f
 class Application() extends core.kernel.process.Process {
   val chrono = core.kernel.Chronometer(30.0)
   val camera = new GlobalCamera()
-  val tracker = new CameraPanner()
+  val tracker = new CameraJoystick()
+  val motion = new PlayerMotion(.25)
   override val id: String = "Application"
   val root_node = new SceneNode()
   root_node.local_transform.translate = new Vector3f(0, 0, -2)
@@ -24,21 +25,21 @@ class Application() extends core.kernel.process.Process {
     )
   )
 
-  val move_speed = 0.1f
+  val acceleration = 0.1f
   in { case KeyEvent(code, _, _) =>
     code match
-      case KeyCode.W  => camera.tz(move_speed)
-      case KeyCode.S  => camera.tz(-move_speed)
-      case KeyCode.A  => camera.tx(-move_speed)
-      case KeyCode.D  => camera.tx(move_speed)
-      case KeyCode.Q  => camera.ty(-move_speed)
-      case KeyCode.E  => camera.ty(move_speed)
-      case KeyCode.H  => ()
-      case KeyCode.K  => ()
-      case KeyCode.U  => ()
-      case KeyCode.J  => ()
-      case KeyCode.Y  => ()
-      case KeyCode.I  => ()
+      case KeyCode.W  => 
+        motion.acceleration.add(0, 0, acceleration)
+      case KeyCode.S  => 
+        motion.acceleration.add(0, 0, -acceleration)
+      case KeyCode.A  => 
+        motion.acceleration.add(-acceleration, 0, 0)
+      case KeyCode.D  => 
+        motion.acceleration.add(acceleration, 0, 0)
+      case KeyCode.Q  => 
+        motion.acceleration.add(0, 0, acceleration)
+      case KeyCode.E  => 
+        motion.acceleration.add(0, 0, acceleration)
       case KeyCode.ESCAPE => out(SystemEvent.SigTerm)
       case _          => ()
   }
@@ -56,7 +57,13 @@ class Application() extends core.kernel.process.Process {
     drain_in()
 
     val rotation_direction = tracker.update(1)
-    camera.rx(-1*rotation_direction*.15f)
+    camera.rx(-1*rotation_direction*.05f)
+
+    motion.update(0.01)
+    val velocity = motion.velocity
+    camera.tx(velocity.x())
+    camera.ty(velocity.y())
+    camera.tz(velocity.z())
     root_node.render(camera).foreach(out)
   }
 }

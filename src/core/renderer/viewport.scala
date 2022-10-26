@@ -82,13 +82,18 @@ class Viewport private (val pointer: Long, var width: Int, var height: Int) {
     }
   }
   glfwSetCursorPosCallback(pointer, move_callback)
-  glfwSetInputMode(pointer, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+  
   def flushEvent(): List[Event] = {
     event_output.addAll(keyboard.poll())
     event_output.addAll(mouse.poll())
     val events = event_output.toList
     event_output.clear()
     events
+  }
+
+  def setCursor(show: Boolean): Unit = {
+    if show then glfwSetInputMode(pointer, GLFW_CURSOR, GLFW_CURSOR_HIDDEN)
+    else glfwSetInputMode(pointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL)
   }
 
 }

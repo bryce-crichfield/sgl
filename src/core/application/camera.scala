@@ -1,7 +1,8 @@
 package core.application
 
-import org.joml.{Vector3f, Matrix4f, Matrix3f}
+import org.joml.{Vector3f, Matrix4f, Matrix3f, Vector2f}
 import core.kernel.Chronometer
+import cats.instances.vector
 
 
 trait Camera {
@@ -87,37 +88,35 @@ class ArtifactTransformation {
   }
 }
 
-class CameraPanner(speed: Float = 0.01) {
+
+class CameraJoystick(speed: Float = 0.01) {
   private var t_x = 0.0f
-  private var c_x = 0.0f
-  private var a_x = 0.0f
   def panTo(x: Float): Unit = {
     t_x = x
   }
-  // Returns the direction to pan towards, 0 if no pan
+  // Returns the scaled direction (-1, 1) to pan towards, 0 if no pan
   def update(delta: Float): Float = {
-    val direction = { 
-      if c_x < t_x then 1
-      else -1
-    }
-    val dx = Math.abs(c_x - t_x)
-    if (dx <= 0.1) {return 0}
-    a_x = (direction*speed)
-    c_x = c_x + (a_x * delta)
-    direction
+    val direction = delta.signum
+    def sigmoid(value: Float, slope: Float = 1.0f): Float = 
+      1 / (1 + Math.exp(-value/slope).toFloat)
+    val scaled = (sigmoid(t_x, 0.25) * 2) - 1
+    if Math.abs(scaled) <= 0.05 then 0
+    else direction * scaled
   }
 }
 
-class CameraAcceleromator {
-  private var p_x = 0.0f
-  private var c_x = 0.0f
-  def position(x: Float): Unit = {
-    p_x = c_x
-    c_x = x
-  }
+class PlayerMotion(smoosh: Float)
+{
+  var acceleration = new Vector3f(0, 0, 0)
+  var velocity = new Vector3f(0, 0, 0) 
 
-  def update(delta: Float): Float = {
-    val dx = c_x - p_x
-    if dx < 0  then -1 else if dx > 0 then 1 else 0
+  def update(delta: Float): Unit = {
+    val dv = new Vector3f()
+    acceleration.mul(delta, dv) 
+    velocity.add(dv)
+    velocity.ceil(new Vector3f(smoosh, smoosh, smoosh))
+    velocity.floor(new Vector3f(smoosh, smoosh, smoosh))
+    acceleration = new Vector3f(0, 0, 0)
   }
 }
+
