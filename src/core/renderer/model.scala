@@ -131,9 +131,9 @@ class Mesh(
   glBindVertexArray(0)
   // ------------------------------------------------------------------------
 
-  def draw(shader: ShaderProgram, view_transform: Matrix4f, texture: Texture) = {
+  def draw(shader: ShaderProgram, mvp: Array[Float], texture: Texture) = {
     shader.use()
-    val array = Util.toArray(view_transform)
+    val array = mvp
     glUniformMatrix4fv(0, false, array)
     // TODO: Bind uniforms and textures
     glBindVertexArray(vao)
@@ -177,7 +177,7 @@ object Mesh {
 class Model private (private val meshes: MutBuf[Mesh]) {
   def draw(
       shader: ShaderProgram,
-      transform: Matrix4f,
+      transform: Array[Float],
       texture: Texture
   ): Unit = {
     meshes.foreach(_.draw(shader, transform, texture))

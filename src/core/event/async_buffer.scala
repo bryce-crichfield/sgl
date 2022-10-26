@@ -7,7 +7,6 @@ import scala.jdk.CollectionConverters.*
 /** An EventBuffer is akin to a terminal node in the global event stream. */
 class AsyncBuffer[A] {
   private val buffer = new LinkedBlockingQueue[A]()
-
   def sink(event: List[A]): Unit = {
     event.foreach(a => buffer.offer(a))
   }
@@ -16,5 +15,13 @@ class AsyncBuffer[A] {
     val drain = new ArrayList[A]()
     buffer.drainTo(drain)
     drain.asScala.toList
+  }
+
+  def empty(): Boolean = {
+    buffer.isEmpty()
+  }
+
+  def dispose(): Unit = {
+    buffer.clear()
   }
 }

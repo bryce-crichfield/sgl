@@ -11,12 +11,12 @@ class SceneNode {
   val children = new core.MutBuf[SceneNode]()
 
 
-  def render(hierarchical_transform: Matrix4f = new Matrix4f()): List[RenderEvent] = {
+  def render(camera: Camera, hierarchical_transform: Matrix4f = new Matrix4f()): List[RenderEvent] = {
     val model_transform = new Matrix4f()
     hierarchical_transform.mul(local_transform(), model_transform)
-
-    val this_render = RenderEvent.DrawModel(model_id, shader_id, model_transform, false)
-    val children_events = children.flatMap { child => child.render(model_transform) }.toList
+    val mvp_transform = core.Util.toArray(camera.mvp(model_transform))
+    val this_render = RenderEvent(_.drawModel(model_id, shader_id, mvp_transform))
+    val children_events = children.flatMap { child => child.render(camera, model_transform) }.toList
     this_render::children_events
   }
 }

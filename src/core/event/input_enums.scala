@@ -146,7 +146,7 @@ object KeyCode {
   // it is very slow so we can just cache the values
   // to reduce access time by 4 orders of magnitude
   // (~200ms -> 0.02ms)
-  private lazy val memo_values = KeyCode.values
+  lazy val memo_values = KeyCode.values
   def from(glfwcode: Int): KeyCode =
     memo_values
       .find(_.code == glfwcode)

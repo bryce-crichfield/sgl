@@ -13,25 +13,10 @@ class Artifact(
   // radians per second
   var radians_per_second = 0
 
-  def update(time: Float, delta: Float): RenderEvent.DrawModel = {
+  def update(time: Float, delta: Float): RenderEvent = {
     val model_transform = local_transform.apply().mul(global_transform.apply())
-    RenderEvent.DrawModel(model_id, shader_id, model_transform, absolute_coordinates)
+    val array_transform = core.Util.toArray(model_transform)
+    RenderEvent(_.drawModel(model_id, shader_id, array_transform))
   }
 }
 
-class ArtifactTransformation {
-  var rotation_center = new Vector3f(0, 0, 0)
-  var rotation_axis = new Vector3f(0, 0, 0)
-  var rotation_angle = 0.0f
-  var translate = new Vector3f(0, 0, 0)
-  var scale = new Vector3f(1.0f, 1.0f, 1.0f)
-
-  def apply(): Matrix4f = {
-    new Matrix4f().identity()
-      .translate(translate)
-      .translate(rotation_center.mul(scale))
-      .rotate(rotation_angle, rotation_axis)
-      .translate(rotation_center.mul(-1).mul(scale))
-      .scale(scale)
-  }
-}

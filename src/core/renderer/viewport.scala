@@ -76,7 +76,6 @@ class Viewport private (val pointer: Long) {
     event_output.addAll(mouse.poll())
     val events = event_output.toList
     event_output.clear()
-    println(f"Flushed ${events}")
     events
   }
 
