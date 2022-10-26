@@ -7,6 +7,7 @@ import org.joml.Vector3f
 class Application() extends core.kernel.process.Process {
   val chrono = core.kernel.Chronometer(30.0)
   val camera = new GlobalCamera()
+  val tracker = new CameraPanner()
   override val id: String = "Application"
   val root_node = new SceneNode()
   root_node.local_transform.translate = new Vector3f(0, 0, -2)
@@ -38,12 +39,24 @@ class Application() extends core.kernel.process.Process {
       case KeyCode.J  => ()
       case KeyCode.Y  => ()
       case KeyCode.I  => ()
-      case KeyCode.F1 => ()
+      case KeyCode.ESCAPE => out(SystemEvent.SigTerm)
       case _          => ()
   }
-  override def update(): Unit = {
+
+
+  in {
+    case MouseEvent(code, action, x, y) =>
+        println(code)
+    case MousePosition(x, y) =>
+        tracker.panTo(x)
+
+        
+  }
+  override def update(): Unit =  {
     drain_in()
 
+    val rotation_direction = tracker.update(1)
+    camera.rx(-1*rotation_direction*.15f)
     root_node.render(camera).foreach(out)
   }
 }

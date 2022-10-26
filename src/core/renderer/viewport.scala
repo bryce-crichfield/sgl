@@ -12,7 +12,8 @@ import org.lwjgl.opengl.GL11.*;
 import scala.collection.mutable.{ListBuffer}
 import core.event.*
 
-class Viewport private (val pointer: Long) {
+class Viewport private (val pointer: Long, var width: Int, var height: Int) {
+
   private val event_output = new ListBuffer[Event]()
   val keyboard = new Keyboard()
   val mouse = new Mouse()
@@ -31,7 +32,8 @@ class Viewport private (val pointer: Long) {
       val width_pointer = stack.mallocInt(1);
       val height_pointer = stack.mallocInt(1);
       glfwGetWindowSize(pointer, width_pointer, height_pointer);
-      val vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+      val monitor = glfwGetPrimaryMonitor()
+      val vidmode = glfwGetVideoMode(monitor);
       glfwSetWindowPos(
         pointer,
         (vidmode.width() - width_pointer.get(0)) / 2,
@@ -65,12 +67,22 @@ class Viewport private (val pointer: Long) {
     {
       val code = MouseCode.from(button)
       val act = InputAction.from(action)
-      val event = MouseEvent(code, act, mods)
-      mouse.push(event)
+      mouse.push(code, act)
     }
   }
   glfwSetMouseButtonCallback(pointer, button_callback)
 
+
+  val move_callback: GLFWCursorPosCallback = {
+    (window, x, y) => {
+      val size = new org.joml.Vector2d(width, height)
+      val coordinates = new org.joml.Vector2d(x, y)
+        .div(size).mul(2).add(-1, -1).mul(1, -1)
+      mouse.push(coordinates.x().toFloat, coordinates.y().toFloat)
+    }
+  }
+  glfwSetCursorPosCallback(pointer, move_callback)
+  glfwSetInputMode(pointer, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
   def flushEvent(): List[Event] = {
     event_output.addAll(keyboard.poll())
     event_output.addAll(mouse.poll())
@@ -82,7 +94,7 @@ class Viewport private (val pointer: Long) {
 }
 
 object Viewport {
-  def create(): Unsafe[Viewport] = {
+  def create(width: Int, height: Int): Unsafe[Viewport] = {
     for {
       init <- Unsafe {
         // TODO: Pipe this into kernel.log
@@ -93,7 +105,7 @@ object Viewport {
       pointer <- Unsafe { 
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE)
-        glfwCreateWindow(1200, 1200, "", 0, 0)
+        glfwCreateWindow(width, height, "", 0, 0)
       }
       _ <- Util.throwOn(pointer == 0)("glfwCreateWindow()")
       _ <- Unsafe {
@@ -101,6 +113,6 @@ object Viewport {
         GL.createCapabilities()
         glfwShowWindow(pointer)
       }
-    } yield Viewport(pointer)
+    } yield Viewport(pointer, width, height)
   }
 }

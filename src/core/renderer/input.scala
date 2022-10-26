@@ -16,15 +16,21 @@ class Keyboard {
   }
 }
 class Mouse {
-  private val event_buffer = MutBuf.empty[MouseEvent]
-  var x: Double = 0
-  var y: Double = 0
+  private val event_buffer = MutBuf.empty[InputEvent]
+  private var x: Float = 0
+  private var y: Float = 0
 
-  def push(event: MouseEvent): Unit = {
-    event_buffer.append(event)
+  def push(code: MouseCode, action: InputAction): Unit = {
+    event_buffer.addOne(MouseEvent(code, action, x, y))
   }
 
-  def poll(): List[MouseEvent] = {
+  def push(x: Float, y: Float): Unit = {
+    this.x = x
+    this.y = y
+  }
+
+  def poll(): List[InputEvent] = {
+    event_buffer.addOne(MousePosition(x, y))
     val out = event_buffer.toList
     event_buffer.clear()
     out

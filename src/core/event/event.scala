@@ -31,7 +31,9 @@ object RenderEvent {
 
 trait InputEvent extends Event
 case class KeyEvent(code: KeyCode, action: InputAction, modifier: Int) extends InputEvent
-case class MouseEvent(code: MouseCode, action: InputAction, mods: Int) extends InputEvent
+case class MouseEvent(code: MouseCode, action: InputAction, x: Float, y: Float) extends InputEvent
+case class MousePosition(x: Float, y: Float) extends InputEvent
+
 
 
 

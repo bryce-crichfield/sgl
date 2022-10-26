@@ -40,9 +40,9 @@ class Renderer()
   }
 
   override def launch(): Unit = {
-    viewport = Viewport.create().getOrElse(null)
+    viewport = Viewport.create(1000,1000).getOrElse(null)
     glEnable(GL_DEPTH_TEST)
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glClearColor(0.5f, 0.5, 0.5, 1.0f)
     texture = Texture.load("resource/texture/metal.png").get
   }

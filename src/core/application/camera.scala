@@ -60,7 +60,6 @@ class GlobalCamera extends Camera {
   }
   
 
-
   def mvp(model_transform: Matrix4f): Matrix4f = {
     val eye = new Vector3f()
     position.add(forward, eye)
@@ -88,34 +87,37 @@ class ArtifactTransformation {
   }
 }
 
-// case RenderEvent.CameraTranslateX(scale) =>
-  //   val direction_scalar_x = new Vector3f()
-  //   camera.right.mul(scale, direction_scalar_x)
-  //   camera.position.add(direction_scalar_x)
+class CameraPanner(speed: Float = 0.01) {
+  private var t_x = 0.0f
+  private var c_x = 0.0f
+  private var a_x = 0.0f
+  def panTo(x: Float): Unit = {
+    t_x = x
+  }
+  // Returns the direction to pan towards, 0 if no pan
+  def update(delta: Float): Float = {
+    val direction = { 
+      if c_x < t_x then 1
+      else -1
+    }
+    val dx = Math.abs(c_x - t_x)
+    if (dx <= 0.1) {return 0}
+    a_x = (direction*speed)
+    c_x = c_x + (a_x * delta)
+    direction
+  }
+}
 
-  // case RenderEvent.CameraTranslateY(scale) =>
-  //   val direction_scalar_y = new Vector3f()
-  //   camera.up.mul(scale, direction_scalar_y)
-  //   camera.position.add(direction_scalar_y)
+class CameraAcceleromator {
+  private var p_x = 0.0f
+  private var c_x = 0.0f
+  def position(x: Float): Unit = {
+    p_x = c_x
+    c_x = x
+  }
 
-  // case RenderEvent.CameraTranslateZ(scale) =>
-  //   val direction_scalar_z = new Vector3f()
-  //   camera.forward.mul(scale, direction_scalar_z)
-  //   camera.position.add(direction_scalar_z)
-
-
-  // case RenderEvent.CameraPan(angle) =>
-  //   val rotation = new Matrix3f().rotate(angle*.1f, new Vector3f(0, 1.0, 0))
-  //   camera.right.mul(rotation)
-  //   camera.up.mul(rotation)
-  //   camera.forward.mul(rotation)
-  // case RenderEvent.CameraTilt(angle) =>
-  //   val rotation = new Matrix3f().rotate(angle*.1f, new Vector3f(1.0, 1.0, 0))
-  //   camera.right.mul(rotation)
-  //   camera.up.mul(rotation)
-  //   camera.forward.mul(rotation)
-  // case RenderEvent.CameraRoll(angle) =>
-  //   val rotation = new Matrix3f().rotate(angle*.1f, new Vector3f(0, 0.0, 1.0))
-  //   camera.right.mul(rotation)
-  //   camera.up.mul(rotation)
-  //   camera.forward.mul(rotation)
+  def update(delta: Float): Float = {
+    val dx = c_x - p_x
+    if dx < 0  then -1 else if dx > 0 then 1 else 0
+  }
+}
